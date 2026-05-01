@@ -17,3 +17,9 @@ opencode.jsonc
 skills-lock.json
 .DS_Store
 worker-configuration.d.ts
+
+# joeblew999 fork overlay — operator-specific, never commit
+/wrangler.jsonc
+config/*.env
+!config/template.env
+mise.local.toml

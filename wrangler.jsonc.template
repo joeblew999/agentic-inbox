@@ -1,0 +1,77 @@
+{
+	// (note: $schema removed because envsubst would interpret $schema as a var.
+	// Editor IntelliSense still works via wrangler's built-in schema discovery.)
+
+	// agentic-inbox Worker config — TEMPLATE.
+	//
+	// DO NOT EDIT wrangler.jsonc directly. Edit this template, then:
+	//   mise run wrangler:gen   # envsubst this template -> wrangler.jsonc
+	// Variables come from config/<env>.env (default env: production).
+
+	"name": "$WORKER_NAME",
+	"account_id": "$CLOUDFLARE_ACCOUNT_ID",
+	"compatibility_date": "2025-11-28",
+	"compatibility_flags": ["nodejs_compat"],
+	"main": "./workers/app.ts",
+	"workers_dev": true,
+
+	"observability": {
+		"enabled": true
+	},
+
+	"vars": {
+		"DOMAINS": "$EMAIL_DOMAIN",
+		"EMAIL_ADDRESSES": []
+	},
+
+	"send_email": [
+		{
+			"name": "EMAIL",
+			"remote": true
+		}
+	],
+
+	"r2_buckets": [
+		{
+			"binding": "BUCKET",
+			"bucket_name": "$BACKUP_BUCKET_NAME",
+			"preview_bucket_name": "$BACKUP_BUCKET_NAME"
+		}
+	],
+
+	"ai": {
+		"binding": "AI"
+	},
+
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "MAILBOX",
+				"class_name": "MailboxDO"
+			},
+			{
+				"name": "EMAIL_AGENT",
+				"class_name": "EmailAgent"
+			},
+			{
+				"name": "EMAIL_MCP",
+				"class_name": "EmailMCP"
+			}
+		]
+	},
+
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_sqlite_classes": ["MailboxDO"]
+		},
+		{
+			"tag": "v2",
+			"new_sqlite_classes": ["EmailAgent"]
+		},
+		{
+			"tag": "v3",
+			"new_sqlite_classes": ["EmailMCP"]
+		}
+	]
+}

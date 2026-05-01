@@ -1,0 +1,73 @@
+# agentic-inbox fork — operator deploy tooling.
+#
+# Layered on top of upstream cloudflare/agentic-inbox. Heavy lifting lives
+# in the shared joeblew999/.github/mise-tasks library imported below.
+#
+# Deploy lifecycle (one time):
+#   1. cp config/template.env config/production.env  # fill identity values
+#   2. fnox set --provider keychain CLOUDFLARE_API_TOKEN  # one-time per machine
+#      fnox set --provider keychain CLOUDFLARE_ACCOUNT_ID
+#   3. mise run cf:provision-d1-r2     # creates R2 only (D1 not used here)
+#   4. mise run cf:access-setup        # creates Access App + writes fnox values
+#   5. mise run cf:secrets-put-mapped  # fnox -> Worker secrets (POLICY_AUD, TEAM_DOMAIN)
+#   6. mise run 10-deploy
+#   7. (manual) Configure Email Routing rule in dashboard
+
+[task_config]
+# v0.8.1: cf:provision-d1-r2 lenient about partial bindings, wrangler:gen jsonc-aware.
+includes = ["git::https://github.com/joeblew999/.github.git//mise-tasks?ref=v0.8.3"]
+
+[tools]
+node                = "24"
+"npm:wrangler"      = "4.84.1"
+"github:jdx/fnox"   = "1.23"
+"aqua:cli/cli"      = "2"
+"aqua:jqlang/jq"    = "1"
+"aqua:a8m/envsubst" = "1"
+"cargo:usage-cli"   = "3"
+
+[env]
+DEFAULT_ENV    = "production"
+FNOX_SYNC_KEYS = ""
+
+# ── Per-fork inline tasks (everything else comes from shared) ────────────────
+
+[tasks."env:dump"]
+description = "Print all keys + values from config/<env>.env (default: production)."
+run = '''
+file=$(mise run -q env:resolve)
+echo "# $file"
+cat "$file"
+'''
+
+[tasks."env:list"]
+description = "List every env config (config/<name>.env)."
+run         = "ls -1 config/*.env 2>/dev/null | grep -v template.env || echo 'no env files yet — copy config/template.env'"
+
+[tasks."1-install"]
+description = "Install npm deps (first time)."
+run         = "npm install"
+
+[tasks."6-build"]
+description = "Build the React Router SPA + worker bundle — required before deploy."
+depends     = ["1-install", "wrangler:gen"]
+run         = "npm run build"
+
+[tasks."10-deploy"]
+description = "Build + deploy the Worker. Validates CF token first."
+depends     = ["cf:token-check", "6-build"]
+run         = "wrangler deploy"
+
+[tasks."10b-redeploy"]
+description = "Re-deploy without rebuilding (fast iteration after wrangler.toml/secret changes)."
+depends     = ["wrangler:gen"]
+run         = "wrangler deploy"
+
+[tasks."dev"]
+description = "Run agentic-inbox locally (Vite + wrangler dev)."
+depends     = ["wrangler:gen"]
+run         = "npm run dev"
+
+[tasks."prove:all"]
+description = "Run all prove:* checks (deployed + bindings + access-policy + secrets)."
+depends     = ["prove:deployed", "prove:bindings", "prove:access-policy", "prove:secrets"]
