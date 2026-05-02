@@ -15,7 +15,7 @@
 
 [task_config]
 # v0.8.1: cf:provision-d1-r2 lenient about partial bindings, wrangler:gen jsonc-aware.
-includes = ["git::https://github.com/joeblew999/.github.git//mise-tasks?ref=v0.8.3"]
+includes = ["git::https://github.com/joeblew999/.github.git//mise-tasks?ref=v0.9.0"]
 
 [tools]
 node                = "24"
