@@ -1,27 +1,36 @@
 {
-	"$schema": "node_modules/wrangler/config-schema.json",
+	// (note: $schema removed because envsubst would interpret $schema as a var.
+	// Editor IntelliSense still works via wrangler's built-in schema discovery.)
+
+	// agentic-inbox Worker config — TEMPLATE.
+	//
+	// DO NOT EDIT wrangler.jsonc directly. Edit this template, then:
+	//   mise run wrangler:gen   # envsubst this template -> wrangler.jsonc
+	// Variables come from config/<env>.env (default env: production).
+
 	"name": "agentic-inbox",
+	"account_id": "7384af54e33b8a54ff240371ea368440",
 	"compatibility_date": "2025-11-28",
+	"compatibility_flags": ["nodejs_compat"],
 	"main": "./workers/app.ts",
+	"workers_dev": true,
+
 	"observability": {
 		"enabled": true
 	},
-	"compatibility_flags": [
-		"nodejs_compat"
-	],
+
 	"vars": {
-		// Production deploys must also define POLICY_AUD and TEAM_DOMAIN.
-		// TEAM_DOMAIN may be the base Access URL or the full /cdn-cgi/access/certs URL.
-		// The worker now fails closed outside local development if Access is not configured.
 		"DOMAINS": "example.com",
 		"EMAIL_ADDRESSES": []
 	},
+
 	"send_email": [
 		{
 			"name": "EMAIL",
 			"remote": true
 		}
 	],
+
 	"r2_buckets": [
 		{
 			"binding": "BUCKET",
@@ -29,9 +38,11 @@
 			"preview_bucket_name": "agentic-inbox"
 		}
 	],
+
 	"ai": {
 		"binding": "AI"
 	},
+
 	"durable_objects": {
 		"bindings": [
 			{
@@ -48,24 +59,19 @@
 			}
 		]
 	},
+
 	"migrations": [
 		{
 			"tag": "v1",
-			"new_sqlite_classes": [
-				"MailboxDO"
-			]
+			"new_sqlite_classes": ["MailboxDO"]
 		},
 		{
 			"tag": "v2",
-			"new_sqlite_classes": [
-				"EmailAgent"
-			]
+			"new_sqlite_classes": ["EmailAgent"]
 		},
 		{
 			"tag": "v3",
-			"new_sqlite_classes": [
-				"EmailMCP"
-			]
+			"new_sqlite_classes": ["EmailMCP"]
 		}
 	]
 }
