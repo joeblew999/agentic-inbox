@@ -96,3 +96,8 @@ Any user who passes the shared Cloudflare Access policy can access all mailboxes
 ## License
 
 Apache 2.0 -- see [LICENSE](LICENSE).
+
+## Mise workflow retirement
+
+The former shared mise automation is retired. See [MISE-RETIREMENT.md](MISE-RETIREMENT.md)
+for removed commands and CI workflows; `mise.toml` contains the remaining local tasks.
